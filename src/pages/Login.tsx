@@ -76,12 +76,23 @@ const Login = () => {
           </div>
 
           <h2 className="text-2xl font-bold text-foreground mb-1">Welcome back</h2>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground mb-4">
             Don't have an account?{' '}
             <Link to="/signup" className="text-primary hover:underline font-medium">
               Sign up
             </Link>
           </p>
+
+          {/* Demo Credentials */}
+          <div className="bg-muted/50 border border-border rounded-lg p-3 mb-6 text-sm">
+            <p className="font-medium text-foreground mb-2">🔑 Demo Credentials</p>
+            <div className="space-y-1 text-muted-foreground">
+              <p>👤 <span className="font-mono">admin@minthealthhub.com</span> / <span className="font-mono">Admin@1234</span></p>
+              <p>👨‍⚕️ <span className="font-mono">doctor1@minthealthhub.com</span> / <span className="font-mono">Doctor@1234</span></p>
+              <p>👩‍⚕️ <span className="font-mono">doctor2@minthealthhub.com</span> / <span className="font-mono">Doctor@1234</span></p>
+              <p>🩺 <span className="font-mono">nurse1@minthealthhub.com</span> / <span className="font-mono">Nurse@1234</span></p>
+            </div>
+          </div>
 
           {error && (
             <Alert variant="destructive" className="mb-6">
