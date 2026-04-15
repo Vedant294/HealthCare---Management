@@ -98,7 +98,7 @@ const Login = () => {
                 type="email" 
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
-                placeholder="your.email@example.com" 
+                placeholder="admin@minthealthhub.com" 
                 required 
                 disabled={loading}
               />
@@ -112,7 +112,7 @@ const Login = () => {
                   type={showPassword ? 'text' : 'password'} 
                   value={password} 
                   onChange={e => setPassword(e.target.value)} 
-                  placeholder="••••••••" 
+                  placeholder="Admin@1234"
                   required 
                   disabled={loading}
                 />

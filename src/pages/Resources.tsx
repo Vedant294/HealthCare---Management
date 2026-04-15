@@ -29,99 +29,39 @@ interface NetworkResource {
 }
 
 const Resources = () => {
-  const { resources, setResources, addAuditLog } = useApp();
+  const { resources, setResources, addAuditLog, hospitalId } = useApp();
   const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Resource | null>(null);
   const [activeTab, setActiveTab] = useState('bed');
   const [viewMode, setViewMode] = useState<'my-hospital' | 'network'>('my-hospital');
   const [form, setForm] = useState<{
-    name: string;
-    type: string;
-    total: string;
-    occupied: string;
-    available: number;
-    threshold: string;
+    name: string; type: string; total: string; occupied: string; available: number; threshold: string;
   }>({ name: '', type: 'bed', total: '', occupied: '', available: 0, threshold: '' });
   const [networkResources, setNetworkResources] = useState<NetworkResource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data generator
-  const generateMockResources = (): Resource[] => {
-    return [
-      { id: '1', name: 'General Ward', type: 'bed', total: 120, occupied: 95, available: 25, threshold: 20, hospital_id: 'mock-1' },
-      { id: '2', name: 'ICU', type: 'bed', total: 30, occupied: 27, available: 3, threshold: 5, hospital_id: 'mock-1' },
-      { id: '3', name: 'Private Room', type: 'bed', total: 40, occupied: 32, available: 8, threshold: 8, hospital_id: 'mock-1' },
-      { id: '4', name: 'Oxygen Cylinders', type: 'oxygen', total: 200, occupied: 145, available: 55, threshold: 30, hospital_id: 'mock-1' },
-      { id: '5', name: 'Oxygen Concentrators', type: 'oxygen', total: 50, occupied: 38, available: 12, threshold: 10, hospital_id: 'mock-1' },
-      { id: '6', name: 'A+ Blood', type: 'blood', total: 50, occupied: 35, available: 15, threshold: 10, hospital_id: 'mock-1' },
-      { id: '7', name: 'B+ Blood', type: 'blood', total: 40, occupied: 28, available: 12, threshold: 8, hospital_id: 'mock-1' },
-      { id: '8', name: 'O+ Blood', type: 'blood', total: 60, occupied: 48, available: 12, threshold: 15, hospital_id: 'mock-1' },
-      { id: '9', name: 'AB- Blood', type: 'blood', total: 20, occupied: 18, available: 2, threshold: 5, hospital_id: 'mock-1' },
-      { id: '10', name: 'Ventilators', type: 'ventilator', total: 50, occupied: 38, available: 12, threshold: 10, hospital_id: 'mock-1' },
-      { id: '11', name: 'BiPAP Machines', type: 'ventilator', total: 25, occupied: 20, available: 5, threshold: 5, hospital_id: 'mock-1' },
-    ];
-  };
-
-  const generateMockNetworkResources = (): NetworkResource[] => {
-    const hospitals = [
-      { id: '1', name: 'City General Hospital', city: 'New York' },
-      { id: '2', name: 'Metro Care Hospital', city: 'Los Angeles' },
-      { id: '3', name: 'St. Mary\'s Medical Center', city: 'Chicago' },
-      { id: '4', name: 'Apollo Healthcare', city: 'Houston' },
-      { id: '5', name: 'Fortis Hospital', city: 'Phoenix' },
-    ];
-
-    const resources: NetworkResource[] = [];
-    let idCounter = 1;
-
-    hospitals.forEach(hospital => {
-      // Beds
-      resources.push(
-        { id: `${idCounter++}`, name: 'General Ward', type: 'bed', total: 100 + Math.floor(Math.random() * 100), occupied: 70 + Math.floor(Math.random() * 50), available: 0, hospital: hospital.name, city: hospital.city, hospital_id: hospital.id, threshold: 20 },
-        { id: `${idCounter++}`, name: 'ICU', type: 'bed', total: 20 + Math.floor(Math.random() * 40), occupied: 15 + Math.floor(Math.random() * 30), available: 0, hospital: hospital.name, city: hospital.city, hospital_id: hospital.id, threshold: 5 }
-      );
-      
-      // Oxygen
-      resources.push(
-        { id: `${idCounter++}`, name: 'Oxygen Cylinders', type: 'oxygen', total: 150 + Math.floor(Math.random() * 150), occupied: 100 + Math.floor(Math.random() * 100), available: 0, hospital: hospital.name, city: hospital.city, hospital_id: hospital.id, threshold: 30 }
-      );
-      
-      // Blood
-      resources.push(
-        { id: `${idCounter++}`, name: 'O+ Blood', type: 'blood', total: 40 + Math.floor(Math.random() * 50), occupied: 25 + Math.floor(Math.random() * 30), available: 0, hospital: hospital.name, city: hospital.city, hospital_id: hospital.id, threshold: 10 },
-        { id: `${idCounter++}`, name: 'A+ Blood', type: 'blood', total: 30 + Math.floor(Math.random() * 40), occupied: 20 + Math.floor(Math.random() * 25), available: 0, hospital: hospital.name, city: hospital.city, hospital_id: hospital.id, threshold: 8 }
-      );
-      
-      // Ventilators
-      resources.push(
-        { id: `${idCounter++}`, name: 'Ventilators', type: 'ventilator', total: 30 + Math.floor(Math.random() * 40), occupied: 20 + Math.floor(Math.random() * 30), available: 0, hospital: hospital.name, city: hospital.city, hospital_id: hospital.id, threshold: 8 }
-      );
-    });
-
-    // Calculate available for each resource
-    return resources.map(r => ({
-      ...r,
-      available: r.total - r.occupied
-    }));
-  };
-
-  // Load mock data on mount and when view mode changes
   useEffect(() => {
-    setLoading(true);
-    
-    setTimeout(() => {
-      if (viewMode === 'network') {
-        setNetworkResources(generateMockNetworkResources());
-        toast.success('Loaded mock network resources');
-      } else {
-        setResources(generateMockResources());
-        toast.success('Loaded mock resources');
-      }
-      setLoading(false);
-    }, 500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (viewMode === 'network') fetchNetworkResources();
   }, [viewMode]);
+
+  const fetchNetworkResources = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('resources')
+      .select('*, hospitals(name, city)')
+      .order('type');
+    if (data) {
+      setNetworkResources(data.map((r: any) => ({
+        id: r.id, name: r.name, type: r.type, total: r.total,
+        occupied: r.occupied, available: r.available,
+        hospital: r.hospitals?.name || 'Unknown',
+        city: r.hospitals?.city || '',
+        hospital_id: r.hospital_id, threshold: r.threshold,
+      })));
+    }
+    setLoading(false);
+  };
 
   const openAdd = () => {
     setEditing(null);
@@ -164,50 +104,44 @@ const Resources = () => {
 
     try {
       if (editing) {
-        // Update existing resource in mock data
-        const updatedResources = resources.map(r => 
-          r.id === editing.id 
-            ? { ...r, name: form.name, total, occupied, available: total - occupied, threshold }
-            : r
-        );
-        setResources(updatedResources);
+        const { error } = await supabase.from('resources').update({
+          name: form.name, total, occupied, threshold,
+        }).eq('id', editing.id);
+        if (error) throw error;
+        setResources(resources.map(r =>
+          r.id === editing.id ? { ...r, name: form.name, total, occupied, available: total - occupied, threshold } : r
+        ));
         addAuditLog('Updated Resource', 'Resources');
         toast.success('Resource updated');
       } else {
-        // Create new resource in mock data
+        const { data, error } = await supabase.from('resources').insert({
+          hospital_id: hospitalId, name: form.name, type: form.type, total, occupied, threshold,
+        }).select().single();
+        if (error) throw error;
         const newResource: Resource = {
-          id: `mock-${Date.now()}`,
-          name: form.name,
-          type: form.type,
-          total,
-          occupied,
-          available: total - occupied,
-          threshold,
-          hospital_id: 'mock-1',
+          id: data.id, name: form.name, type: form.type,
+          total, occupied, available: total - occupied, threshold, hospital_id: hospitalId || '',
         };
         setResources([...resources, newResource]);
         addAuditLog('Created Resource', 'Resources');
         toast.success('Resource added');
       }
-
       setModalOpen(false);
     } catch (error: unknown) {
       const err = error as Error;
-      console.error('Error saving resource:', err);
       toast.error(err.message || 'Failed to save resource');
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this resource?')) return;
-
     try {
-      const updatedResources = resources.filter(r => r.id !== id);
-      setResources(updatedResources);
+      const { error } = await supabase.from('resources').delete().eq('id', id);
+      if (error) throw error;
+      setResources(resources.filter(r => r.id !== id));
       addAuditLog('Deleted Resource', 'Resources');
       toast.success('Resource deleted');
     } catch (error) {
-      console.error('Error deleting resource:', error);
       toast.error('Failed to delete resource');
     }
   };

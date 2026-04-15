@@ -15,12 +15,15 @@ import { Pencil, Trash2, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SupabaseAppointment {
-  id: number;
+  id: string;
   phone_number: string;
   patient_name: string | null;
   appointment_date: string;
   appointment_time: string;
+  doctor: string | null;
+  department: string | null;
   status: string;
+  source: string;
   created_at: string;
 }
 
@@ -79,10 +82,10 @@ const Appointments = () => {
           phoneNumber: apt.phone_number,
           date: apt.appointment_date,
           time: apt.appointment_time,
-          doctor: 'Dr. Assigned', // You can add doctor field to appointments table
-          department: 'General', // You can add department field to appointments table
+          doctor: apt.doctor || 'Dr. Assigned',
+          department: apt.department || 'General',
           status: apt.status as AppointmentDisplay['status'],
-          source: apt.patient_name ? 'whatsapp' : 'manual', // WhatsApp bookings have patient_name
+          source: apt.source as AppointmentDisplay['source'] || 'manual',
         }));
         setAppointments(formatted);
         toast.success(`Loaded ${formatted.length} appointments`);

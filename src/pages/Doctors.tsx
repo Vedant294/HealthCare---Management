@@ -5,6 +5,7 @@ import ModalForm from '@/components/shared/ModalForm';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useApp, Doctor } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,7 +14,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Doctors = () => {
-  const { doctors, setDoctors, addAuditLog } = useApp();
+  const { doctors, setDoctors, addAuditLog, hospitalId } = useApp();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Doctor | null>(null);
   const [form, setForm] = useState({ name: '', department: '', availability: '', status: 'Available' as Doctor['status'], slotDuration: 30 });
@@ -21,22 +22,34 @@ const Doctors = () => {
   const openAdd = () => { setEditing(null); setForm({ name: '', department: '', availability: '', status: 'Available', slotDuration: 30 }); setModalOpen(true); };
   const openEdit = (d: Doctor) => { setEditing(d); setForm({ ...d }); setModalOpen(true); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name || !form.department) { toast.error('Fill required fields'); return; }
     if (editing) {
+      const { error } = await supabase.from('doctors').update({
+        name: form.name, department: form.department, availability: form.availability,
+        status: form.status, slot_duration: form.slotDuration,
+      }).eq('id', editing.id);
+      if (error) { toast.error('Failed to update doctor'); return; }
       setDoctors(prev => prev.map(d => d.id === editing.id ? { ...d, ...form } : d));
       addAuditLog('Updated Doctor', 'Doctors');
       toast.success('Doctor updated');
     } else {
-      setDoctors(prev => [...prev, { ...form, id: Date.now().toString() }]);
+      const { data, error } = await supabase.from('doctors').insert({
+        hospital_id: hospitalId, name: form.name, department: form.department,
+        availability: form.availability, status: form.status, slot_duration: form.slotDuration,
+      }).select().single();
+      if (error) { toast.error('Failed to add doctor'); return; }
+      setDoctors(prev => [...prev, { ...form, id: data.id }]);
       addAuditLog('Created Doctor', 'Doctors');
       toast.success('Doctor added');
     }
     setModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Delete this doctor?')) return;
+    const { error } = await supabase.from('doctors').delete().eq('id', id);
+    if (error) { toast.error('Failed to delete doctor'); return; }
     setDoctors(prev => prev.filter(d => d.id !== id));
     addAuditLog('Deleted Doctor', 'Doctors');
     toast.success('Doctor deleted');

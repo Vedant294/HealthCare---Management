@@ -34,7 +34,7 @@ const Notifications = () => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{n.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
-                <p className="text-xs text-muted-foreground mt-1">{n.time}</p>
+                <p className="text-xs text-muted-foreground mt-1">{new Date(n.timestamp).toLocaleString()}</p>
               </div>
               {!n.read && (
                 <Button variant="ghost" size="sm" onClick={() => markRead(n.id)} className="text-xs">Mark Read</Button>

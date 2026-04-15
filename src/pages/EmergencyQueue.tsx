@@ -3,6 +3,7 @@ import DataTable, { Column } from '@/components/shared/DataTable';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useApp, EmergencyCase } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
@@ -10,14 +11,16 @@ import { toast } from 'sonner';
 const EmergencyQueue = () => {
   const { emergencyCases, setEmergencyCases, addAuditLog } = useApp();
 
-  const updateStatus = (id: string, status: EmergencyCase['status']) => {
+  const updateStatus = async (id: string, status: EmergencyCase['status']) => {
     setEmergencyCases(prev => prev.map(e => e.id === id ? { ...e, status } : e));
+    await supabase.from('emergency_cases').update({ status }).eq('id', id);
     addAuditLog(`Emergency ${status}`, 'Emergency Queue');
     toast.success(`Status updated to ${status}`);
   };
 
-  const updateSeverity = (id: string, severity: EmergencyCase['severity']) => {
+  const updateSeverity = async (id: string, severity: EmergencyCase['severity']) => {
     setEmergencyCases(prev => prev.map(e => e.id === id ? { ...e, severity } : e));
+    await supabase.from('emergency_cases').update({ severity }).eq('id', id);
     addAuditLog('Changed Emergency Priority', 'Emergency Queue');
     toast.success('Priority updated');
   };

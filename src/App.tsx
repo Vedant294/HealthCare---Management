@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -28,6 +29,10 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const P = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedRoute>{children}</ProtectedRoute>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -42,19 +47,19 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/" element={<Index />} />
-                <Route path="/appointments" element={<Appointments />} />
-                <Route path="/patients" element={<Patients />} />
-                <Route path="/doctors" element={<Doctors />} />
-                <Route path="/resources" element={<Resources />} />
-                <Route path="/emergency" element={<EmergencyQueue />} />
-                <Route path="/crisis" element={<CrisisPanel />} />
-                <Route path="/service-requests" element={<ServiceRequests />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/audit-logs" element={<AuditLogs />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/" element={<P><Index /></P>} />
+                <Route path="/appointments" element={<P><Appointments /></P>} />
+                <Route path="/patients" element={<P><Patients /></P>} />
+                <Route path="/doctors" element={<P><Doctors /></P>} />
+                <Route path="/resources" element={<P><Resources /></P>} />
+                <Route path="/emergency" element={<P><EmergencyQueue /></P>} />
+                <Route path="/crisis" element={<P><CrisisPanel /></P>} />
+                <Route path="/service-requests" element={<P><ServiceRequests /></P>} />
+                <Route path="/reports" element={<P><Reports /></P>} />
+                <Route path="/notifications" element={<P><Notifications /></P>} />
+                <Route path="/audit-logs" element={<P><AuditLogs /></P>} />
+                <Route path="/settings" element={<P><SettingsPage /></P>} />
+                <Route path="/profile" element={<P><Profile /></P>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppProvider>

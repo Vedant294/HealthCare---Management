@@ -5,6 +5,7 @@ import ModalForm from '@/components/shared/ModalForm';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { useApp, ServiceRequest } from '@/context/AppContext';
+import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,7 +15,7 @@ import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ServiceRequests = () => {
-  const { serviceRequests, setServiceRequests, addAuditLog } = useApp();
+  const { serviceRequests, setServiceRequests, addAuditLog, hospitalId } = useApp();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ hospitalName: '', resourceType: '', quantity: 1, urgency: 'Medium' as ServiceRequest['urgency'], message: '' });
 
@@ -32,23 +33,34 @@ const ServiceRequests = () => {
 
   const openAdd = () => { setForm({ hospitalName: '', resourceType: '', quantity: 1, urgency: 'Medium', message: '' }); setModalOpen(true); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.hospitalName) { toast.error('Enter hospital name'); return; }
     if (!form.resourceType) { toast.error('Select resource type'); return; }
-    const req: ServiceRequest = {
-      ...form,
-      id: `SR${String(serviceRequests.length + 1).padStart(3, '0')}`,
+    const { data, error } = await supabase.from('service_requests').insert({
+      hospital_id: hospitalId,
+      hospital_name: form.hospitalName,
+      resource_type: form.resourceType,
+      quantity: form.quantity,
+      urgency: form.urgency,
+      message: form.message,
       status: 'Pending',
-      date: new Date().toISOString().split('T')[0],
+      request_date: new Date().toISOString().split('T')[0],
+    }).select().single();
+    if (error) { toast.error('Failed to submit request'); return; }
+    const req: ServiceRequest = {
+      id: data.id, hospitalName: data.hospital_name, resourceType: data.resource_type,
+      quantity: data.quantity, urgency: data.urgency, message: data.message,
+      status: data.status, date: data.request_date,
     };
-    setServiceRequests(prev => [...prev, req]);
+    setServiceRequests(prev => [req, ...prev]);
     addAuditLog('Created Service Request', 'Service Requests');
     toast.success('Service request submitted');
     setModalOpen(false);
   };
 
-  const handleCancel = (id: string) => {
+  const handleCancel = async (id: string) => {
     if (!confirm('Cancel this request?')) return;
+    await supabase.from('service_requests').delete().eq('id', id);
     setServiceRequests(prev => prev.filter(r => r.id !== id));
     addAuditLog('Cancelled Service Request', 'Service Requests');
     toast.success('Request cancelled');
