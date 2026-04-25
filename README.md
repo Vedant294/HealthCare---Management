@@ -130,6 +130,75 @@ If they ask a follow-up: "What would you improve?"
 Credits used: 0.18
 Elapsed time: 21s
 
+Explain the Project
+
+Mint Health Hub is a full-stack healthcare coordination and crisis management platform. It has two parts — a web dashboard for hospital staff and a WhatsApp chatbot for patients. Hospital staff can manage patients, doctors, appointments, resources like beds and oxygen, handle emergencies, and track everything in real time. Patients can book, reschedule, or cancel appointments just by sending a WhatsApp message in English, Hindi, or Marathi. The system also sends automated appointment reminders and medicine reminders to patients via WhatsApp one day before their scheduled visit.
+
+2. Project Architecture
+
+Patient (WhatsApp)
+      ↓
+Twilio API
+      ↓
+Flask Webhook (Python) ←→ Supabase Database
+      ↑                        ↑
+ngrok tunnel            React Dashboard
+                        (Hospital Staff)
+                              ↑
+                        Supabase Auth
+Patient sends WhatsApp message → Twilio forwards to Flask bot via webhook
+Bot reads/writes conversation state from Supabase
+Appointment gets saved to Supabase
+Dashboard reads same Supabase database in real time
+Staff log in via Supabase Auth
+3. Modules in the Project
+
+Dashboard modules:
+
+Dashboard — KPI cards, charts, live overview
+Patients — add, edit, delete patient records
+Doctors — manage doctor profiles and schedules
+Appointments — view WhatsApp + manual bookings
+Resources — track beds, oxygen, blood, ventilators
+Emergency Queue — manage emergency cases by severity
+Crisis Panel — activate crisis mode, view critical stats
+Service Requests — request resources from other hospitals
+Reports & Analytics — charts for patient inflow, ICU trend, oxygen usage
+Notifications — real-time hospital alerts
+Audit Logs — track every action in the system
+Profile & Settings — user profile, hospital configuration
+WhatsApp Bot modules:
+
+Appointment booking with slot selection
+View existing appointments
+Reschedule appointment
+Cancel appointment
+Automated reminders (1 day before)
+Multilingual support (English, Hindi, Marathi)
+4. Users in the Project
+
+Role	Access
+Admin	Full access — manage everything, add resources, view all data
+Doctor	View patients, appointments, their schedule
+Nurse	View patients, resources, emergency queue
+Patient	Books appointments via WhatsApp only, no dashboard access
+5. Database Tables
+
+Table	Purpose
+hospitals	8 hospital records
+users	Staff profiles linked to hospitals
+admins	Admin permissions per hospital
+patients	Patient records
+doctors	Doctor profiles and schedules
+appointments	All bookings — WhatsApp and manual
+resources	Beds, oxygen, blood, ventilators per hospital
+emergency_cases	Emergency queue entries
+service_requests	Resource requests between hospitals
+notifications	Hospital alerts
+audit_logs	Every action logged with user and timestamp
+user_states	WhatsApp bot conversation state per user
+user_languages	Language preference per WhatsApp user
+Total — 13 tables
 
 Checkpoint
 Restore
